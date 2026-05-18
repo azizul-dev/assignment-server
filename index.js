@@ -59,6 +59,12 @@ async function run() {
         {$set: updatedPet}
       )
       res.json(result);
+    });
+
+    app.delete('/pet/:id', async(req, res) =>{
+      const {id} = req.params;
+      const result = await petCollection.deleteOne({_id: new ObjectId(id)});
+      res.json(result);
     })
 
 
