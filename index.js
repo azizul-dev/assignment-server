@@ -30,19 +30,17 @@ async function run() {
     const db = client.db("FurEver");
     const petCollection = db.collection("pets")
 
+  
+    app.get('/pet', async (req, res) =>{
+      const result = await petCollection.find().toArray();
+      res.json(result);
+    })
+
     app.post('/pet', async (req, res) =>{
         const petData = req.body
         const result = await petCollection.insertOne(petData)
         res.json(result)
     })
-
-
-
-
-
-
-
-
 
 
 
