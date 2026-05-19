@@ -28,7 +28,9 @@ async function run() {
 
 
     const db = client.db("FurEver");
-    const petCollection = db.collection("pets")
+    const petCollection = db.collection("pets");
+
+    const petAdoptingCollection = db.collection("petAdopting");
 
   
     app.get('/pet', async (req, res) =>{
@@ -65,6 +67,14 @@ async function run() {
       const {id} = req.params;
       const result = await petCollection.deleteOne({_id: new ObjectId(id)});
       res.json(result);
+    });
+
+
+    app.post("/adopting", async (req,res) =>{
+      const petAdopting = req.body;
+      const result = await petAdoptingCollection.insertOne(petAdopting);
+
+      res.json(result)
     })
 
 
