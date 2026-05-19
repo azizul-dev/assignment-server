@@ -84,7 +84,6 @@ async function run() {
       res.json(result);
     });
 
-   
     app.patch("/adopting/:id/status", async (req, res) => {
       const { id } = req.params;
       const { status, petId } = req.body;
@@ -94,17 +93,27 @@ async function run() {
         { $set: { status } },
       );
 
-    
-      if (status === "approved") {
+      if (status === "approved" && petId) {
         await petCollection.updateOne(
           { _id: new ObjectId(petId) },
           { $set: { status: "adopted" } },
         );
+
         await petAdoptingCollection.updateMany(
           { petId, _id: { $ne: new ObjectId(id) } },
           { $set: { status: "rejected" } },
         );
       }
+
+      res.json(result);
+    });
+
+    app.delete("/adopting/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const result = await petAdoptingCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
 
       res.json(result);
     });
