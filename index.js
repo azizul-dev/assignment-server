@@ -69,6 +69,17 @@ async function run() {
       res.json(result);
     });
 
+    app.get("/adopting/check/:userId/:petId", async (req, res) => {
+      const { userId, petId } = req.params;
+
+      const result = await petAdoptingCollection.findOne({
+        userId,
+        petId,
+      });
+
+      res.json(result);
+    });
+
     app.post("/adopting", async (req, res) => {
       const petAdopting = req.body;
       const result = await petAdoptingCollection.insertOne(petAdopting);
