@@ -70,6 +70,12 @@ async function run() {
     });
 
 
+    app.get("/adopting/:userId", async(req, res) =>{
+      const {userId} = req.params;
+      const result = await petAdoptingCollection.find({userId: userId}).toArray();
+      res.json(result);
+    })
+
     app.post("/adopting", async (req,res) =>{
       const petAdopting = req.body;
       const result = await petAdoptingCollection.insertOne(petAdopting);
