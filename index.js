@@ -39,11 +39,22 @@ async function run() {
       res.json(result);
     });
 
-    app.get("/pet/:id", async (req, res) => {
-      const { id } = req.params;
-      const result = await petCollection.findOne({ _id: new ObjectId(id) });
-      res.json(result);
-    });
+    app.get(
+      "/pet/:id",
+      (req, res, nex) => {
+        const header = req.headers.authorization;
+       if(header == "logged in"){
+         nex();
+       } else{
+        res.status(401).json({message: "Unauthorized"})
+       }
+      },
+      async (req, res) => {
+        const { id } = req.params;
+        const result = await petCollection.findOne({ _id: new ObjectId(id) });
+        res.json(result);
+      },
+    );
 
     app.patch("/pet/:id", async (req, res) => {
       const { id } = req.params;
