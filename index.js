@@ -34,8 +34,6 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const { payload } = await jwtVerify(token, JWKS);
-
-    console.log(payload);
     next();
   } catch (error) {
     return res.status(401).json({ message: "Forbidden" });
@@ -58,7 +56,7 @@ async function run() {
       res.json(result);
     });
 
-    app.post("/pet", async (req, res) => {
+    app.post("/pet", verifyToken, async (req, res) => {
       const petData = req.body;
       const result = await petCollection.insertOne(petData);
       res.json(result);
@@ -70,7 +68,8 @@ async function run() {
       res.json(result);
     });
 
-    app.patch("/pet/:id", async (req, res) => {
+    app.patch("/pet/:id", verifyToken
+      , async (req, res) => {
       const { id } = req.params;
       const updatedPet = req.body;
       const result = await petCollection.updateOne(
@@ -80,13 +79,13 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/pet/:id", async (req, res) => {
+    app.delete("/pet/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const result = await petCollection.deleteOne({ _id: new ObjectId(id) });
       res.json(result);
     });
 
-    app.get("/adopting/:userId", async (req, res) => {
+    app.get("/adopting/:userId", verifyToken, async (req, res) => {
       const { userId } = req.params;
       const result = await petAdoptingCollection
         .find({ userId: userId })
@@ -105,14 +104,14 @@ async function run() {
       res.json(result);
     });
 
-    app.post("/adopting", async (req, res) => {
+    app.post("/adopting", verifyToken, async (req, res) => {
       const petAdopting = req.body;
       const result = await petAdoptingCollection.insertOne(petAdopting);
 
       res.json(result);
     });
 
-    app.get("/adopting/pet/:petId", async (req, res) => {
+    app.get("/adopting/pet/:petId", verifyToken, async (req, res) => {
       const { petId } = req.params;
 
       const result = await petAdoptingCollection.find({ petId }).toArray();
@@ -120,7 +119,7 @@ async function run() {
       res.json(result);
     });
 
-    app.patch("/adopting/:id/status", async (req, res) => {
+    app.patch("/adopting/:id/status", verifyToken, async (req, res) => {
       const { id } = req.params;
       const { status, petId } = req.body;
 
@@ -144,7 +143,7 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/adopting/:id", async (req, res) => {
+    app.delete("/adopting/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
 
       const result = await petAdoptingCollection.deleteOne({
