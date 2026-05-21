@@ -20,7 +20,9 @@ const client = new MongoClient(uri, {
   },
 });
 
-const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+);
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req?.headers.authorization;
@@ -38,26 +40,20 @@ const verifyToken = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({ message: "Forbidden" });
   }
-
-  
 };
 
 async function run() {
   try {
-    // await client.connect();
-
     const db = client.db("FurEver");
     const petCollection = db.collection("pets");
-
     const petAdoptingCollection = db.collection("petAdopting");
 
+    app.get("/featured", async (req, res) => {
+      const result = await petCollection.find().limit(6).toArray();
+      res.json(result);
+    });
 
-    app.get("/featured", async (req, res) =>{
-      const result = await petCollection.find().limit(6).toArray()
-      res.json(result)
-    })
-
-    app.get("/pet", verifyToken, async (req, res) => {
+    app.get("/pet", async (req, res) => {
       const result = await petCollection.find().toArray();
       res.json(result);
     });
@@ -74,8 +70,7 @@ async function run() {
       res.json(result);
     });
 
-    app.patch("/pet/:id", verifyToken
-      , async (req, res) => {
+    app.patch("/pet/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const updatedPet = req.body;
       const result = await petCollection.updateOne(
@@ -91,6 +86,30 @@ async function run() {
       res.json(result);
     });
 
+    
+    app.get("/adopting/owner/:ownerEmail", verifyToken, async (req, res) => {
+      const { ownerEmail } = req.params;
+      const result = await petAdoptingCollection
+        .find({ ownerEmail: ownerEmail })
+        .toArray();
+      res.json(result);
+    });
+
+   
+    app.get("/adopting/check/:userId/:petId", async (req, res) => {
+      const { userId, petId } = req.params;
+      const result = await petAdoptingCollection.findOne({ userId, petId });
+      res.json(result);
+    });
+
+    
+    app.get("/adopting/pet/:petId", verifyToken, async (req, res) => {
+      const { petId } = req.params;
+      const result = await petAdoptingCollection.find({ petId }).toArray();
+      res.json(result);
+    });
+
+    
     app.get("/adopting/:userId", verifyToken, async (req, res) => {
       const { userId } = req.params;
       const result = await petAdoptingCollection
@@ -99,29 +118,9 @@ async function run() {
       res.json(result);
     });
 
-    app.get("/adopting/check/:userId/:petId", async (req, res) => {
-      const { userId, petId } = req.params;
-
-      const result = await petAdoptingCollection.findOne({
-        userId,
-        petId,
-      });
-
-      res.json(result);
-    });
-
     app.post("/adopting", verifyToken, async (req, res) => {
       const petAdopting = req.body;
       const result = await petAdoptingCollection.insertOne(petAdopting);
-
-      res.json(result);
-    });
-
-    app.get("/adopting/pet/:petId", verifyToken, async (req, res) => {
-      const { petId } = req.params;
-
-      const result = await petAdoptingCollection.find({ petId }).toArray();
-
       res.json(result);
     });
 
@@ -151,18 +150,13 @@ async function run() {
 
     app.delete("/adopting/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
-
       const result = await petAdoptingCollection.deleteOne({
         _id: new ObjectId(id),
       });
-
       res.json(result);
     });
 
-    // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
-    );
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // await client.close();
   }
